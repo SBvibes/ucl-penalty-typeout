@@ -128,12 +128,12 @@ const player = document.querySelector(".player");
 const shotMarker = document.querySelector("#shotMarker");
 
 const soundPaths = {
-  kick: "public/assets/audio/kick.wav",
-  net: "public/assets/audio/net.wav",
-  crowd: "public/assets/audio/crowd-cheer.wav",
-  miss: "public/assets/audio/miss.wav",
-  save: "public/assets/audio/save.wav",
-  select: "public/assets/audio/select.wav",
+  kick: "assets/audio/kick.wav",
+  net: "assets/audio/net.wav",
+  crowd: "assets/audio/crowd-cheer.wav",
+  miss: "assets/audio/miss.wav",
+  save: "assets/audio/save.wav",
+  select: "assets/audio/select.wav",
 };
 
 const sounds = Object.fromEntries(
