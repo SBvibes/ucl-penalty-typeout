@@ -112,6 +112,7 @@ const liveAccuracy = document.querySelector("#liveAccuracy");
 const promptText = document.querySelector("#promptText");
 const typingTarget = document.querySelector("#typingTarget");
 const typingOverlay = document.querySelector("#typingOverlay");
+const mobileTypeInput = document.querySelector("#mobileTypeInput");
 const timeMeter = document.querySelector("#timeMeter span");
 const zonePreview = document.querySelector("#zonePreview");
 const resultScene = document.querySelector("#resultScene");
@@ -171,6 +172,10 @@ function resetAimVisuals() {
   typingOverlay.classList.remove("active");
   typingOverlay.setAttribute("aria-hidden", "true");
   promptText.innerHTML = "";
+  if (mobileTypeInput) {
+    mobileTypeInput.value = "";
+    mobileTypeInput.blur();
+  }
   state.typedText = "";
 }
 
@@ -209,6 +214,10 @@ function showTypingOverlay(zoneName) {
   kickScreen.classList.add("is-typing");
   typingOverlay.classList.add("active");
   typingOverlay.setAttribute("aria-hidden", "false");
+  if (mobileTypeInput) {
+    mobileTypeInput.value = "";
+    window.setTimeout(() => mobileTypeInput.focus({ preventScroll: true }), 60);
+  }
 }
 
 function startTypingTimer() {
@@ -381,6 +390,24 @@ function renderPrompt() {
   );
 }
 
+function syncTypedText(value) {
+  if (!state.zone || state.evaluated) return;
+  if (!state.typingActive && value.length > 0) startTypingTimer();
+
+  state.typedText = value.slice(0, state.zone.sentence.length);
+  if (mobileTypeInput && mobileTypeInput.value !== state.typedText) {
+    mobileTypeInput.value = state.typedText;
+  }
+
+  renderPrompt();
+  updateTypingClock();
+
+  if (state.typedText === state.zone.sentence) {
+    const { currentWpm, accuracy } = getTypingStats();
+    evaluateShot(currentWpm, accuracy, true);
+  }
+}
+
 window.addEventListener("keydown", (event) => {
   if (!kickScreen.classList.contains("is-typing") || state.evaluated) return;
 
@@ -395,21 +422,21 @@ window.addEventListener("keydown", (event) => {
 
   if (event.key === "Backspace") {
     event.preventDefault();
-    state.typedText = state.typedText.slice(0, -1);
-    renderPrompt();
-    updateTypingClock();
+    syncTypedText(state.typedText.slice(0, -1));
     return;
   }
 
   if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) return;
 
   event.preventDefault();
-  if (!state.typingActive) startTypingTimer();
   if (state.typedText.length >= state.zone.sentence.length) return;
 
-  state.typedText += event.key;
-  renderPrompt();
-  updateTypingClock();
+  syncTypedText(state.typedText + event.key);
+});
+
+mobileTypeInput?.addEventListener("input", () => {
+  if (!kickScreen.classList.contains("is-typing") || state.evaluated) return;
+  syncTypedText(mobileTypeInput.value);
 });
 
 nextShotButton.addEventListener("click", () => {
