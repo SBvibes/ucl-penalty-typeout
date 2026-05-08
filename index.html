@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Final Shot: Retro Penalty Shootout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="arcade-cabinet" aria-label="Retro penalty shootout game">
+        <header class="marquee" aria-label="Game title">
+          <p class="eyebrow title-eyebrow">UCL Semi Final</p>
+          <h1>Final Shot</h1>
+        </header>
+
+        <section id="teamScreen" class="screen active">
+          <div class="screen-title team-title">
+            <h2>Choose Your Side</h2>
+            <p>Pick your club and step up to the spot.</p>
+          </div>
+
+          <div class="team-grid">
+            <button class="team-card bayern" data-team="Bayern Munich">
+              <img src="public/assets/logos/bayern-logo.png" class="team-logo" alt="Bayern Munich" />
+              <strong>Bayern Munich</strong>
+              <small>Germany</small>
+            </button>
+
+            <button class="team-card psg" data-team="PSG">
+              <img src="public/assets/logos/psg-logo.png" class="team-logo" alt="PSG" />
+              <strong>PSG</strong>
+              <small>France</small>
+            </button>
+          </div>
+        </section>
+
+        <section id="kickScreen" class="screen">
+          <div class="hud">
+            <span id="selectedTeam">Team</span>
+            <span id="roundLabel">Shot 1</span>
+          </div>
+
+          <div class="pitch-scene">
+            <div class="crowd"></div>
+            <div class="goal">
+              <button class="shot-zone top-left" data-zone="Top Left"></button>
+              <button class="shot-zone top-center" data-zone="Top Center"></button>
+              <button class="shot-zone top-right" data-zone="Top Right"></button>
+              <button class="shot-zone mid-left" data-zone="Mid Left"></button>
+              <button class="shot-zone mid-center" data-zone="Mid Center"></button>
+              <button class="shot-zone mid-right" data-zone="Mid Right"></button>
+              <button class="shot-zone low-left" data-zone="Low Left"></button>
+              <button class="shot-zone low-center" data-zone="Low Center"></button>
+              <button class="shot-zone low-right" data-zone="Low Right"></button>
+              <div id="shotMarker" class="shot-marker" aria-hidden="true"></div>
+              <div class="keeper"></div>
+            </div>
+
+            <div class="player"></div>
+            <div class="ball"></div>
+
+            <div id="typingOverlay" class="typing-overlay" aria-hidden="true">
+              <div class="typing-hud">
+                <div class="hud-stat">
+                  <small>Target WPM</small>
+                  <strong id="requiredWpm">100</strong>
+                </div>
+                <div class="hud-stat">
+                  <small>Required Accuracy</small>
+                  <strong id="requiredAccuracy">96%</strong>
+                </div>
+                <div class="hud-stat">
+                  <small>Score Chance</small>
+                  <strong id="scoreChance">100%</strong>
+                </div>
+                <div class="hud-stat timer-stat">
+                  <small>Time Left</small>
+                  <strong id="timeLeft">0.0s</strong>
+                  <span id="timeMeter" class="time-meter"><span></span></span>
+                </div>
+                <div class="hud-stat">
+                  <small>Current WPM</small>
+                  <strong id="liveWpm">0</strong>
+                </div>
+                <div class="hud-stat">
+                  <small>Current Accuracy</small>
+                  <strong id="liveAccuracy">100%</strong>
+                </div>
+              </div>
+
+              <div class="type-line" aria-live="polite">
+                <p id="typingTarget" class="typing-target">Target</p>
+                <p id="promptText" class="prompt"></p>
+                <p class="type-instruction">&lt;&lt; Type To Shoot &gt;&gt;</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Aim Your Shot</h2>
+            <p id="zonePreview">Corners are automatic goals if you beat the typing challenge.</p>
+          </div>
+        </section>
+
+        <section id="resultScreen" class="screen">
+          <div id="resultScene" class="result-scene">
+            <div class="net"></div>
+            <div id="resultBall" class="result-ball"></div>
+            <div id="resultKeeper" class="result-keeper"></div>
+          </div>
+
+          <div class="result-copy">
+            <p id="resultKicker" class="eyebrow"></p>
+            <h2 id="resultTitle">Goal!</h2>
+            <p id="resultDetail"></p>
+            <button id="nextShotButton" class="primary-button">Shoot Again</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
