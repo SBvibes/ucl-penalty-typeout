@@ -542,6 +542,7 @@ h2 {
 .typing-overlay.active {
   display: flex;
   opacity: 1;
+  pointer-events: auto;
 }
 
 .typing-hud {
@@ -613,6 +614,8 @@ h2 {
   border: 2px solid rgba(85, 214, 255, .28);
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .38), 0 10px 30px rgba(0, 0, 0, .32);
   text-shadow: 4px 4px #000, 0 0 16px rgba(0, 0, 0, .95);
+  cursor: text;
+  touch-action: manipulation;
 }
 
 .typing-target {
@@ -665,18 +668,20 @@ h2 {
 }
 
 .mobile-type-input {
-  position: absolute;
-  left: 50%;
-  bottom: 6px;
-  width: 1px;
-  height: 1px;
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  z-index: 20;
+  width: 120px;
+  height: 36px;
   opacity: .01;
   border: 0;
   padding: 0;
   background: transparent;
   color: transparent;
   font-size: 16px;
-  transform: translateX(-50%);
+  caret-color: transparent;
+  pointer-events: none;
 }
 
 .result-scene {

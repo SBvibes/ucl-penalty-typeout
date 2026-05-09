@@ -127,6 +127,7 @@ const ball = document.querySelector(".ball");
 const keeper = document.querySelector(".keeper");
 const player = document.querySelector(".player");
 const shotMarker = document.querySelector("#shotMarker");
+const typeLine = document.querySelector(".type-line");
 
 const soundPaths = {
   kick: "assets/audio/kick.wav",
@@ -152,6 +153,18 @@ function playSound(name) {
   const audio = source.cloneNode();
   audio.volume = name === "crowd" ? 0.55 : 0.75;
   audio.play().catch(() => {});
+}
+
+function focusTypingInput() {
+  if (!mobileTypeInput || !kickScreen.classList.contains("is-typing") || state.evaluated) return;
+
+  mobileTypeInput.focus({ preventScroll: true });
+  const cursorPosition = mobileTypeInput.value.length;
+  try {
+    mobileTypeInput.setSelectionRange(cursorPosition, cursorPosition);
+  } catch {
+    // Some mobile browsers do not expose selection controls for every keyboard mode.
+  }
 }
 
 function showScreen(name) {
@@ -216,7 +229,7 @@ function showTypingOverlay(zoneName) {
   typingOverlay.setAttribute("aria-hidden", "false");
   if (mobileTypeInput) {
     mobileTypeInput.value = "";
-    window.setTimeout(() => mobileTypeInput.focus({ preventScroll: true }), 60);
+    focusTypingInput();
   }
 }
 
@@ -437,6 +450,12 @@ window.addEventListener("keydown", (event) => {
 mobileTypeInput?.addEventListener("input", () => {
   if (!kickScreen.classList.contains("is-typing") || state.evaluated) return;
   syncTypedText(mobileTypeInput.value);
+});
+
+[typingOverlay, typeLine, promptText].forEach((target) => {
+  target?.addEventListener("pointerdown", () => {
+    focusTypingInput();
+  });
 });
 
 nextShotButton.addEventListener("click", () => {

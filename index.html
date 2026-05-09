@@ -95,13 +95,15 @@
               <div class="type-line" aria-live="polite">
                 <p id="typingTarget" class="typing-target">Target</p>
                 <p id="promptText" class="prompt"></p>
-                <p class="type-instruction">&lt;&lt; Type To Shoot &gt;&gt;</p>
+                <p class="type-instruction">Tap text to type</p>
                 <input
                   id="mobileTypeInput"
                   class="mobile-type-input"
                   type="text"
+                  inputmode="text"
                   autocomplete="off"
-                  autocapitalize="none"
+                  autocorrect="off"
+                  autocapitalize="off"
                   spellcheck="false"
                   aria-label="Typing challenge input"
                 />
