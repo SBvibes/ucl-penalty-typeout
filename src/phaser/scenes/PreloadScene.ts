@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { imagePaths, soundPaths } from "../game";
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -6,11 +7,13 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("stadium", "assets/penalty-background-v1.png");
-    this.load.image("ball", "assets/sprites/ball.png");
-    this.load.image("keeper-idle", "assets/sprites/keeper_idle.png");
-    this.load.image("psg-idle", "assets/sprites/psg_idle.png");
-    this.load.image("bayern-idle", "assets/sprites/bayern_idle.png");
+    Object.entries(imagePaths).forEach(([key, path]) => {
+      this.load.image(key, path);
+    });
+
+    Object.entries(soundPaths).forEach(([key, path]) => {
+      this.load.audio(key, path);
+    });
   }
 
   create() {

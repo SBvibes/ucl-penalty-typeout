@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { shotZoneList } from "../game";
+import { playSound, shotZoneList, soundKeys } from "../game";
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -31,5 +31,14 @@ export class MenuScene extends Phaser.Scene {
       fontFamily: "monospace",
       fontSize: "20px",
     }).setOrigin(0.5);
+    this.add.text(width / 2, 482, "click canvas to test ui sfx", {
+      color: "#f8f4d8",
+      fontFamily: "monospace",
+      fontSize: "18px",
+    }).setOrigin(0.5);
+
+    this.input.once("pointerdown", () => {
+      playSound(this, soundKeys.select);
+    });
   }
 }
