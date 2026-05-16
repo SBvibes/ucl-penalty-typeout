@@ -1,5 +1,16 @@
 {
+  "private": true,
   "scripts": {
-    "build": "node --check game.js && node scripts/build.js"
+    "build": "node --check game.js && node scripts/build.js",
+    "dev:phaser": "vite --host 0.0.0.0",
+    "build:phaser": "vite build --outDir dist-phaser",
+    "preview:phaser": "vite preview --host 0.0.0.0 --outDir dist-phaser"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }

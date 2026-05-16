@@ -1,2 +1,6 @@
 dist/
+dist-phaser/
+node_modules/
 tmp/
+vite-phaser.log
+vite-phaser-*.log
