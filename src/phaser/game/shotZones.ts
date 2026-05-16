@@ -1,0 +1,100 @@
+import type { ShotZone, ShotZoneName } from "./types";
+
+export const shotZones: Record<ShotZoneName, ShotZone> = {
+  "Top Left": {
+    name: "Top Left",
+    x: 13,
+    y: 14,
+    wpm: 100,
+    accuracy: 96,
+    chance: 1,
+    sentence: "The fearless striker thundered the ball beyond the keeper into the impossible upper corner.",
+    note: "Perfect corner: guaranteed goal if you type fast enough.",
+  },
+  "Top Center": {
+    name: "Top Center",
+    x: 50,
+    y: 14,
+    wpm: 85,
+    accuracy: 94,
+    chance: 0.74,
+    sentence: "The shot climbed high and dared the keeper to jump through the roar.",
+    note: "High and central: quick typing, decent risk.",
+  },
+  "Top Right": {
+    name: "Top Right",
+    x: 87,
+    y: 14,
+    wpm: 100,
+    accuracy: 96,
+    chance: 1,
+    sentence: "A ruthless finish curled above every glove and crashed into the brightest corner of the net.",
+    note: "Perfect corner: guaranteed goal if you type fast enough.",
+  },
+  "Mid Left": {
+    name: "Mid Left",
+    x: 14,
+    y: 49,
+    wpm: 70,
+    accuracy: 92,
+    chance: 0.68,
+    sentence: "The ball snapped low across the keeper and raced toward the side net.",
+    note: "Wide enough to be dangerous, but the keeper can reach it.",
+  },
+  "Mid Center": {
+    name: "Mid Center",
+    x: 50,
+    y: 50,
+    wpm: 50,
+    accuracy: 88,
+    chance: 0.42,
+    sentence: "The shot went straight down the middle.",
+    note: "Easy typing, risky placement.",
+  },
+  "Mid Right": {
+    name: "Mid Right",
+    x: 86,
+    y: 49,
+    wpm: 70,
+    accuracy: 92,
+    chance: 0.68,
+    sentence: "The striker opened his foot and pushed the shot hard toward the far post.",
+    note: "Wide enough to be dangerous, but the keeper can reach it.",
+  },
+  "Low Left": {
+    name: "Low Left",
+    x: 14,
+    y: 82,
+    wpm: 55,
+    accuracy: 90,
+    chance: 0.62,
+    sentence: "A skidding finish hugged the turf and chased the bottom corner.",
+    note: "Manageable pace with a respectable chance.",
+  },
+  "Low Center": {
+    name: "Low Center",
+    x: 50,
+    y: 82,
+    wpm: 40,
+    accuracy: 85,
+    chance: 0.34,
+    sentence: "The keeper waited as the ball rolled forward.",
+    note: "Very easy typing, but the keeper loves this shot.",
+  },
+  "Low Right": {
+    name: "Low Right",
+    x: 86,
+    y: 82,
+    wpm: 55,
+    accuracy: 90,
+    chance: 0.62,
+    sentence: "The ball skipped along the grass and bent toward the bottom corner.",
+    note: "Manageable pace with a respectable chance.",
+  },
+};
+
+export const shotZoneList = Object.values(shotZones);
+
+export function getShotZone(name: ShotZoneName): ShotZone {
+  return shotZones[name];
+}

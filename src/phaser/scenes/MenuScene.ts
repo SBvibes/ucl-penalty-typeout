@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { shotZoneList } from "../game";
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -24,6 +25,11 @@ export class MenuScene extends Phaser.Scene {
       color: "#f8f4d8",
       fontFamily: "monospace",
       fontSize: "22px",
+    }).setOrigin(0.5);
+    this.add.text(width / 2, 432, `${shotZoneList.length} shot zones loaded`, {
+      color: "#76ff7a",
+      fontFamily: "monospace",
+      fontSize: "20px",
     }).setOrigin(0.5);
   }
 }
