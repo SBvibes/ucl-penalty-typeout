@@ -85,6 +85,7 @@ export class ResultScene extends Phaser.Scene {
       fontSize: "28px",
       fontStyle: "bold",
     }).setOrigin(1, 0.5);
+    this.createShotPips(width / 2, 58);
 
     this.add.image(width * 0.39, height * 0.76, strikerKey).setScale(0.17).setOrigin(0.5, 1);
     this.add.image(width * 0.55, height * 0.52, keeperKey).setScale(0.145).setOrigin(0.5, 1);
@@ -138,6 +139,7 @@ export class ResultScene extends Phaser.Scene {
     });
 
     this.playReaction();
+    this.playVisualReaction();
     this.input.once("pointerdown", () => {
       playSound(this, soundKeys.select);
       if (complete) {
@@ -157,6 +159,101 @@ export class ResultScene extends Phaser.Scene {
     if (!complete) return line;
 
     return `${line}\nAVG ${getAverageWpm(this.updatedSession)} WPM  ${getAverageAccuracy(this.updatedSession)}% ACC`;
+  }
+
+  private createShotPips(x: number, y: number) {
+    const gap = 34;
+    const startX = x - ((this.updatedSession.maxShots - 1) * gap) / 2;
+
+    for (let index = 0; index < this.updatedSession.maxShots; index += 1) {
+      const shot = this.updatedSession.shots[index];
+      const color = shot ? this.getShotPipColor(shot.result) : 0x173156;
+      const pip = this.add.circle(startX + index * gap, y, shot ? 9 : 7, color, shot ? 1 : 0.55);
+      pip.setStrokeStyle(3, 0x07111f, 0.9);
+
+      if (!shot) continue;
+
+      this.add.text(startX + index * gap, y + 1, shot.result === "goal" ? "G" : shot.result === "save" ? "S" : "M", {
+        color: "#061022",
+        fontFamily: "monospace",
+        fontSize: "12px",
+        fontStyle: "bold",
+      }).setOrigin(0.5);
+    }
+  }
+
+  private getShotPipColor(result: ShotEvaluation["result"]) {
+    if (result === "goal") return 0xfff176;
+    if (result === "save") return 0x55d6ff;
+    return 0xff5266;
+  }
+
+  private playVisualReaction() {
+    if (this.evaluation.result === "goal") {
+      this.cameras.main.shake(220, 0.006);
+      this.flashResult(0xfff176, 0.22);
+      this.createCrowdWave();
+      this.createConfetti();
+      return;
+    }
+
+    if (this.evaluation.result === "save") {
+      this.cameras.main.shake(140, 0.003);
+      this.flashResult(0x55d6ff, 0.16);
+      return;
+    }
+
+    this.flashResult(0xff5266, 0.15);
+  }
+
+  private flashResult(color: number, alpha: number) {
+    const { width, height } = this.scale;
+    const flash = this.add.rectangle(width / 2, height / 2, width, height, color, alpha).setDepth(20);
+    this.tweens.add({
+      targets: flash,
+      alpha: 0,
+      duration: 420,
+      ease: "Quad.easeOut",
+      onComplete: () => flash.destroy(),
+    });
+  }
+
+  private createCrowdWave() {
+    const { width, height } = this.scale;
+
+    for (let index = 0; index < 16; index += 1) {
+      const block = this.add.rectangle(index * (width / 15), height * 0.42, width / 18, 34, 0xffc83d, 0.22).setDepth(8);
+      this.tweens.add({
+        targets: block,
+        y: height * 0.37,
+        alpha: 0,
+        duration: 520,
+        delay: index * 35,
+        yoyo: true,
+        ease: "Sine.easeOut",
+        onComplete: () => block.destroy(),
+      });
+    }
+  }
+
+  private createConfetti() {
+    const { width, height } = this.scale;
+    const colors = [0xfff176, 0x55d6ff, 0xff5266, 0xf8f4d8];
+
+    for (let index = 0; index < 42; index += 1) {
+      const x = width * 0.25 + Math.random() * width * 0.5;
+      const bit = this.add.rectangle(x, height * 0.18, 8, 8, colors[index % colors.length], 0.95).setDepth(25);
+      this.tweens.add({
+        targets: bit,
+        x: x + (Math.random() - 0.5) * 340,
+        y: height * (0.55 + Math.random() * 0.28),
+        angle: Math.random() * 360,
+        alpha: 0,
+        duration: 900 + Math.random() * 450,
+        ease: "Quad.easeOut",
+        onComplete: () => bit.destroy(),
+      });
+    }
   }
 
   private getResultStrikerKey() {

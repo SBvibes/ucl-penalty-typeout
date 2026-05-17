@@ -74,6 +74,7 @@ export class GameScene extends Phaser.Scene {
       fontSize: "28px",
       fontStyle: "bold",
     }).setOrigin(1, 0.5);
+    this.createShotPips(width / 2, 58);
 
     const strikerKey = this.team.id === "bayern" ? imageKeys.bayernStrikerIdleClean : imageKeys.strikerIdleClean;
     this.strikerSprite = this.add.image(width * 0.34, height * 0.74, strikerKey).setScale(0.17).setOrigin(0.5, 1);
@@ -147,6 +148,35 @@ export class GameScene extends Phaser.Scene {
         this.focusMobileInput();
       });
     });
+  }
+
+  private createShotPips(x: number, y: number) {
+    const gap = 34;
+    const startX = x - ((this.session.maxShots - 1) * gap) / 2;
+
+    for (let index = 0; index < this.session.maxShots; index += 1) {
+      const shot = this.session.shots[index];
+      const active = index + 1 === this.session.shotNumber;
+      const color = shot ? this.getShotPipColor(shot.result) : active ? 0xffc83d : 0x173156;
+      const alpha = shot || active ? 1 : 0.65;
+      const pip = this.add.circle(startX + index * gap, y, active ? 10 : 8, color, alpha);
+      pip.setStrokeStyle(3, active ? 0xf8f4d8 : 0x07111f, 0.9);
+
+      if (shot) {
+        this.add.text(startX + index * gap, y + 1, shot.result === "goal" ? "G" : shot.result === "save" ? "S" : "M", {
+          color: "#061022",
+          fontFamily: "monospace",
+          fontSize: "12px",
+          fontStyle: "bold",
+        }).setOrigin(0.5);
+      }
+    }
+  }
+
+  private getShotPipColor(result: ShotEvaluation["result"]) {
+    if (result === "goal") return 0xfff176;
+    if (result === "save") return 0x55d6ff;
+    return 0xff5266;
   }
 
   private updatePreview(zone: ShotZone) {
