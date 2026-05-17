@@ -5,6 +5,7 @@ import {
   getAverageAccuracy,
   getAverageWpm,
   getTeam,
+  getShotZone,
   imageKeys,
   isShootoutComplete,
   playGoalReaction,
@@ -67,7 +68,7 @@ export class ResultScene extends Phaser.Scene {
     const complete = isShootoutComplete(this.updatedSession);
     const titleColor = isGoal ? "#fff176" : this.evaluation.result === "save" ? "#55d6ff" : "#ff5266";
     const strikerKey = this.getResultStrikerKey();
-    const keeperKey = this.evaluation.result === "save" ? imageKeys.goalkeeperCatchCenterClean : imageKeys.goalkeeperDiveRightClean;
+    const keeperKey = this.getResultKeeperKey();
 
     this.add.image(width / 2, height / 2, imageKeys.stadium).setDisplaySize(width, height);
     this.add.rectangle(width / 2, height / 2, width, height, 0x030814, 0.58);
@@ -262,6 +263,16 @@ export class ResultScene extends Phaser.Scene {
     }
 
     return this.teamId === "bayern" ? imageKeys.bayernStrikerDespairClean : imageKeys.strikerDespairClean;
+  }
+
+  private getResultKeeperKey() {
+    if (this.evaluation.result === "save") return imageKeys.goalkeeperCatchCenterClean;
+
+    const zone = getShotZone(this.zoneName);
+    if (zone.x < 45) return imageKeys.goalkeeperDiveLeftClean;
+    if (zone.x > 55) return imageKeys.goalkeeperDiveRightClean;
+
+    return imageKeys.goalkeeperCatchCenterClean;
   }
 
   private playReaction() {
