@@ -1,14 +1,19 @@
 import Phaser from "phaser";
 import {
+  addShootoutShot,
+  createShootoutSession,
+  getAverageAccuracy,
+  getAverageWpm,
   getTeam,
   imageKeys,
+  isShootoutComplete,
   playGoalReaction,
   playMissReaction,
   playSaveReaction,
   playSound,
   soundKeys,
 } from "../game";
-import type { ShotEvaluation, ShotZoneName, TeamId, TeamName } from "../game";
+import type { ShootoutSession, ShotEvaluation, ShotZoneName, TeamId, TeamName } from "../game";
 
 interface ResultSceneData {
   teamId?: TeamId;
@@ -16,6 +21,7 @@ interface ResultSceneData {
   zoneName?: ShotZoneName;
   finalWpm?: number;
   finalAccuracy?: number;
+  session?: ShootoutSession;
   evaluation?: ShotEvaluation;
 }
 
@@ -25,6 +31,8 @@ export class ResultScene extends Phaser.Scene {
   private zoneName: ShotZoneName = "Mid Center";
   private finalWpm = 0;
   private finalAccuracy = 100;
+  private session!: ShootoutSession;
+  private updatedSession!: ShootoutSession;
   private evaluation: ShotEvaluation = {
     result: "miss",
     title: "Miss!",
@@ -43,12 +51,20 @@ export class ResultScene extends Phaser.Scene {
     this.zoneName = data.zoneName ?? "Mid Center";
     this.finalWpm = data.finalWpm ?? 0;
     this.finalAccuracy = data.finalAccuracy ?? 100;
+    this.session = data.session ?? createShootoutSession(team.id);
     this.evaluation = data.evaluation ?? this.evaluation;
+    this.updatedSession = addShootoutShot(this.session, {
+      result: this.evaluation.result,
+      zoneName: this.zoneName,
+      wpm: this.finalWpm,
+      accuracy: this.finalAccuracy,
+    });
   }
 
   create() {
     const { width, height } = this.scale;
     const isGoal = this.evaluation.result === "goal";
+    const complete = isShootoutComplete(this.updatedSession);
     const titleColor = isGoal ? "#fff176" : this.evaluation.result === "save" ? "#55d6ff" : "#ff5266";
     const strikerKey = this.getResultStrikerKey();
     const keeperKey = this.evaluation.result === "save" ? imageKeys.goalkeeperCatchCenterClean : imageKeys.goalkeeperDiveRightClean;
@@ -63,7 +79,7 @@ export class ResultScene extends Phaser.Scene {
       fontSize: "28px",
       fontStyle: "bold",
     }).setOrigin(0, 0.5);
-    this.add.text(width - 42, 28, "RESULT", {
+    this.add.text(width - 42, 28, complete ? "FINAL" : `SHOT ${this.session.shotNumber}/${this.session.maxShots}`, {
       color: "#ffc83d",
       fontFamily: "monospace",
       fontSize: "28px",
@@ -89,6 +105,14 @@ export class ResultScene extends Phaser.Scene {
       fontStyle: "bold",
     }).setOrigin(0.5);
 
+    this.add.text(width / 2, height * 0.43, this.getRunSummaryText(complete), {
+      color: "#55d6ff",
+      fontFamily: "monospace",
+      fontSize: "24px",
+      fontStyle: "bold",
+      align: "center",
+    }).setOrigin(0.5);
+
     this.add.text(width / 2, height * 0.82, this.evaluation.detail, {
       color: "#f8f4d8",
       fontFamily: "monospace",
@@ -98,7 +122,7 @@ export class ResultScene extends Phaser.Scene {
       wordWrap: { width: width * 0.76 },
     }).setOrigin(0.5);
 
-    const retry = this.add.text(width / 2, height * 0.92, "CLICK / TAP TO SHOOT AGAIN", {
+    const retry = this.add.text(width / 2, height * 0.92, complete ? "CLICK / TAP FOR NEW RUN" : "CLICK / TAP FOR NEXT SHOT", {
       color: "#55d6ff",
       fontFamily: "monospace",
       fontSize: "22px",
@@ -116,8 +140,23 @@ export class ResultScene extends Phaser.Scene {
     this.playReaction();
     this.input.once("pointerdown", () => {
       playSound(this, soundKeys.select);
-      this.scene.start("GameScene", { teamId: this.teamId });
+      if (complete) {
+        this.scene.start("MenuScene");
+        return;
+      }
+
+      this.scene.start("GameScene", {
+        teamId: this.teamId,
+        session: this.updatedSession,
+      });
     });
+  }
+
+  private getRunSummaryText(complete: boolean) {
+    const line = `RUN SCORE ${this.updatedSession.goals}/${this.updatedSession.maxShots}`;
+    if (!complete) return line;
+
+    return `${line}\nAVG ${getAverageWpm(this.updatedSession)} WPM  ${getAverageAccuracy(this.updatedSession)}% ACC`;
   }
 
   private getResultStrikerKey() {

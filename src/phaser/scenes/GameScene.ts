@@ -10,17 +10,20 @@ import {
   playMissReaction,
   playSaveReaction,
   playSound,
+  createShootoutSession,
   shotZoneList,
   soundKeys,
 } from "../game";
-import type { ShotEvaluation, ShotZone, TeamId, TeamOption, TypingStats } from "../game";
+import type { ShootoutSession, ShotEvaluation, ShotZone, TeamId, TeamOption, TypingStats } from "../game";
 
 interface GameSceneData {
   teamId?: TeamId;
+  session?: ShootoutSession;
 }
 
 export class GameScene extends Phaser.Scene {
   private team!: TeamOption;
+  private session!: ShootoutSession;
   private strikerSprite?: Phaser.GameObjects.Image;
   private keeperSprite?: Phaser.GameObjects.Image;
   private ballSprite?: Phaser.GameObjects.Image;
@@ -44,6 +47,7 @@ export class GameScene extends Phaser.Scene {
 
   init(data: GameSceneData) {
     this.team = getTeam(data.teamId ?? "psg");
+    this.session = data.session ?? createShootoutSession(this.team.id);
     this.activeZone = undefined;
     this.typedText = "";
     this.startedAtMs = 0;
@@ -64,7 +68,7 @@ export class GameScene extends Phaser.Scene {
       fontSize: "28px",
       fontStyle: "bold",
     }).setOrigin(0, 0.5);
-    this.add.text(width - 42, 28, "SHOT 1", {
+    this.add.text(width - 42, 28, `SHOT ${this.session.shotNumber}/${this.session.maxShots}`, {
       color: "#ffc83d",
       fontFamily: "monospace",
       fontSize: "28px",
@@ -78,7 +82,7 @@ export class GameScene extends Phaser.Scene {
 
     this.createAimZones();
 
-    this.previewText = this.add.text(width / 2, height - 42, "AIM YOUR SHOT", {
+    this.previewText = this.add.text(width / 2, height - 42, `AIM YOUR SHOT  SCORE ${this.session.goals}/${this.session.shots.length}`, {
       color: "#f8f4d8",
       fontFamily: "monospace",
       fontSize: "24px",
@@ -328,6 +332,7 @@ export class GameScene extends Phaser.Scene {
         zoneName: zone.name,
         finalWpm: stats.currentWpm,
         finalAccuracy: stats.accuracy,
+        session: this.session,
         evaluation,
       });
     });

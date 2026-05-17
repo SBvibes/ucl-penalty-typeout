@@ -39,3 +39,18 @@ export interface ShotEvaluation {
   detail: string;
   passedTyping: boolean;
 }
+
+export interface ShootoutShot {
+  result: ShotResult;
+  zoneName: ShotZoneName;
+  wpm: number;
+  accuracy: number;
+}
+
+export interface ShootoutSession {
+  teamId: TeamId;
+  shotNumber: number;
+  maxShots: number;
+  goals: number;
+  shots: ShootoutShot[];
+}
