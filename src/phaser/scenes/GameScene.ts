@@ -1,15 +1,19 @@
 import Phaser from "phaser";
 import {
   clampTypedText,
+  evaluateShot,
   getTimeLimitSeconds,
   getTeam,
   getTypingStats,
   imageKeys,
+  playGoalReaction,
+  playMissReaction,
+  playSaveReaction,
   playSound,
   shotZoneList,
   soundKeys,
 } from "../game";
-import type { ShotZone, TeamId, TeamOption, TypingStats } from "../game";
+import type { ShotEvaluation, ShotZone, TeamId, TeamOption, TypingStats } from "../game";
 
 interface GameSceneData {
   teamId?: TeamId;
@@ -17,6 +21,9 @@ interface GameSceneData {
 
 export class GameScene extends Phaser.Scene {
   private team!: TeamOption;
+  private strikerSprite?: Phaser.GameObjects.Image;
+  private keeperSprite?: Phaser.GameObjects.Image;
+  private ballSprite?: Phaser.GameObjects.Image;
   private selectedMarker?: Phaser.GameObjects.Rectangle;
   private previewText?: Phaser.GameObjects.Text;
   private typingOverlay?: Phaser.GameObjects.Container;
@@ -28,6 +35,7 @@ export class GameScene extends Phaser.Scene {
   private timeLimitSeconds = 0;
   private typingActive = false;
   private typingComplete = false;
+  private resultScheduled = false;
 
   constructor() {
     super("GameScene");
@@ -56,9 +64,9 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(1, 0.5);
 
     const strikerKey = this.team.id === "bayern" ? imageKeys.bayernStrikerIdleClean : imageKeys.strikerIdleClean;
-    this.add.image(width * 0.34, height * 0.74, strikerKey).setScale(0.17).setOrigin(0.5, 1);
-    this.add.image(width * 0.5, height * 0.705, imageKeys.ball).setScale(0.55);
-    this.add.image(width * 0.5, height * 0.515, imageKeys.goalkeeperIdleClean).setScale(0.145).setOrigin(0.5, 1);
+    this.strikerSprite = this.add.image(width * 0.34, height * 0.74, strikerKey).setScale(0.17).setOrigin(0.5, 1);
+    this.ballSprite = this.add.image(width * 0.5, height * 0.705, imageKeys.ball).setScale(0.55);
+    this.keeperSprite = this.add.image(width * 0.5, height * 0.515, imageKeys.goalkeeperIdleClean).setScale(0.145).setOrigin(0.5, 1);
 
     this.createAimZones();
 
@@ -80,8 +88,7 @@ export class GameScene extends Phaser.Scene {
     this.updateStatsText(stats);
 
     if (this.typingActive && stats.remaining <= 0) {
-      this.typingComplete = true;
-      this.previewText?.setText("TIME! KICK RESULT NEXT");
+      this.finishTyping(false, stats);
     }
   }
 
@@ -213,9 +220,137 @@ export class GameScene extends Phaser.Scene {
     this.updateStatsText(stats);
 
     if (this.typedText === this.activeZone.sentence) {
-      this.typingComplete = true;
-      this.previewText?.setText(`DONE  ${stats.currentWpm} WPM  ${stats.accuracy}% ACC - KICK RESULT NEXT`);
+      this.finishTyping(true, stats);
     }
+  }
+
+  private finishTyping(completedText: boolean, stats: TypingStats) {
+    if (!this.activeZone || this.resultScheduled) return;
+
+    this.typingComplete = true;
+    this.resultScheduled = true;
+    this.input.keyboard?.off("keydown", this.handleTypingKey, this);
+
+    const evaluation = evaluateShot({
+      team: this.team.name,
+      zone: this.activeZone,
+      finalWpm: stats.currentWpm,
+      finalAccuracy: stats.accuracy,
+      completedText,
+    });
+
+    this.previewText?.setText(
+      `${evaluation.title.toUpperCase()}  ${stats.currentWpm} WPM  ${stats.accuracy}% ACC`,
+    );
+    this.typingOverlay?.destroy(true);
+    this.typingOverlay = undefined;
+    this.promptChars = [];
+
+    this.playKickSequence(this.activeZone, evaluation, stats);
+  }
+
+  private playKickSequence(zone: ShotZone, evaluation: ShotEvaluation, stats: TypingStats) {
+    const { width, height } = this.scale;
+    const strikerKickKey =
+      this.team.id === "bayern" ? imageKeys.bayernStrikerKickFollowthroughClean : imageKeys.strikerKickFollowthroughClean;
+    const goalPoint = this.getGoalPoint(zone);
+    const target = this.getBallEndPoint(goalPoint, evaluation.result);
+
+    playSound(this, soundKeys.kick);
+    this.strikerSprite?.setTexture(strikerKickKey).setScale(0.17).setOrigin(0.5, 1);
+    this.tweens.add({
+      targets: this.strikerSprite,
+      x: width * 0.355,
+      y: height * 0.735,
+      duration: 180,
+      yoyo: true,
+      ease: "Quad.easeOut",
+    });
+
+    this.moveKeeper(zone, evaluation.result);
+    this.tweens.add({
+      targets: this.ballSprite,
+      x: target.x,
+      y: target.y,
+      scale: evaluation.result === "miss" ? 0.35 : 0.28,
+      duration: 640,
+      ease: "Cubic.easeOut",
+      onComplete: () => this.playShotReaction(evaluation.result),
+    });
+
+    this.time.delayedCall(1050, () => {
+      this.scene.start("ResultScene", {
+        teamId: this.team.id,
+        teamName: this.team.name,
+        zoneName: zone.name,
+        finalWpm: stats.currentWpm,
+        finalAccuracy: stats.accuracy,
+        evaluation,
+      });
+    });
+  }
+
+  private getGoalPoint(zone: ShotZone) {
+    const { width, height } = this.scale;
+    const goalBox = {
+      x: width * 0.327,
+      y: height * 0.306,
+      width: width * 0.346,
+      height: height * 0.206,
+    };
+
+    return {
+      x: goalBox.x + goalBox.width * (zone.x / 100),
+      y: goalBox.y + goalBox.height * (zone.y / 100),
+    };
+  }
+
+  private getBallEndPoint(goalPoint: { x: number; y: number }, result: ShotEvaluation["result"]) {
+    if (result !== "miss") return goalPoint;
+
+    const { width } = this.scale;
+    const missDirection = goalPoint.x < width / 2 ? -1 : 1;
+    return {
+      x: goalPoint.x + missDirection * 90,
+      y: goalPoint.y - 42,
+    };
+  }
+
+  private moveKeeper(zone: ShotZone, result: ShotEvaluation["result"]) {
+    if (!this.keeperSprite) return;
+
+    const diveLeft = zone.x < 50;
+    const texture =
+      result === "save"
+        ? imageKeys.goalkeeperCatchCenterClean
+        : diveLeft
+          ? imageKeys.goalkeeperDiveLeftClean
+          : imageKeys.goalkeeperDiveRightClean;
+    const xOffset = result === "save" ? 0 : diveLeft ? -74 : 74;
+    const yOffset = result === "save" ? 12 : 20;
+
+    this.keeperSprite.setTexture(texture).setScale(0.145).setOrigin(0.5, 1);
+    this.tweens.add({
+      targets: this.keeperSprite,
+      x: this.keeperSprite.x + xOffset,
+      y: this.keeperSprite.y + yOffset,
+      duration: 520,
+      ease: "Quad.easeOut",
+    });
+  }
+
+  private playShotReaction(result: ShotEvaluation["result"]) {
+    if (result === "goal") {
+      playGoalReaction(this);
+      return;
+    }
+
+    if (result === "save") {
+      playSaveReaction(this);
+      return;
+    }
+
+    playMissReaction(this);
   }
 
   private getCurrentTypingStats(): TypingStats {
