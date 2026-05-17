@@ -36,6 +36,7 @@ export class GameScene extends Phaser.Scene {
   private typingActive = false;
   private typingComplete = false;
   private resultScheduled = false;
+  private mobileInput?: HTMLTextAreaElement;
 
   constructor() {
     super("GameScene");
@@ -43,6 +44,13 @@ export class GameScene extends Phaser.Scene {
 
   init(data: GameSceneData) {
     this.team = getTeam(data.teamId ?? "psg");
+    this.activeZone = undefined;
+    this.typedText = "";
+    this.startedAtMs = 0;
+    this.timeLimitSeconds = 0;
+    this.typingActive = false;
+    this.typingComplete = false;
+    this.resultScheduled = false;
   }
 
   create() {
@@ -132,6 +140,7 @@ export class GameScene extends Phaser.Scene {
         this.selectedMarker?.setPosition(x, y).setVisible(true);
         this.updatePreview(zone);
         this.showTypingOverlay(zone);
+        this.focusMobileInput();
       });
     });
   }
@@ -153,6 +162,11 @@ export class GameScene extends Phaser.Scene {
     this.typingOverlay?.destroy(true);
     this.promptChars = [];
     this.typingOverlay = this.createTypingOverlay(zone);
+    this.ensureMobileInput();
+    if (this.mobileInput) {
+      this.mobileInput.value = "";
+      this.mobileInput.maxLength = zone.sentence.length;
+    }
     this.updateStatsText(this.getCurrentTypingStats());
     this.renderPrompt();
     this.input.keyboard?.off("keydown", this.handleTypingKey, this);
@@ -183,8 +197,9 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const hintText = this.isTouchDevice() ? "TAP TEXT TO TYPE - BACKSPACE WORKS" : "TYPE THE SENTENCE - BACKSPACE WORKS";
     const hint = this.add
-      .text(width / 2, height * 0.665, "TYPE THE SENTENCE - BACKSPACE WORKS", {
+      .text(width / 2, height * 0.665, hintText, {
         color: "#f8f4d8",
         fontFamily: "monospace",
         fontSize: "17px",
@@ -193,6 +208,11 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     overlay.add([shade, panel, border, title, this.statsText, hint]);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, width, height),
+      Phaser.Geom.Rectangle.Contains,
+    );
+    overlay.on("pointerdown", () => this.focusMobileInput());
     return overlay;
   }
 
@@ -224,12 +244,35 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private handleMobileInput = () => {
+    if (!this.activeZone || this.typingComplete || !this.mobileInput) return;
+
+    if (!this.typingActive && this.mobileInput.value.length > 0) {
+      this.typingActive = true;
+      this.startedAtMs = Date.now();
+    }
+
+    this.typedText = clampTypedText(this.mobileInput.value, this.activeZone.sentence);
+    if (this.mobileInput.value !== this.typedText) {
+      this.mobileInput.value = this.typedText;
+    }
+
+    this.renderPrompt();
+    const stats = this.getCurrentTypingStats();
+    this.updateStatsText(stats);
+
+    if (this.typedText === this.activeZone.sentence) {
+      this.finishTyping(true, stats);
+    }
+  };
+
   private finishTyping(completedText: boolean, stats: TypingStats) {
     if (!this.activeZone || this.resultScheduled) return;
 
     this.typingComplete = true;
     this.resultScheduled = true;
     this.input.keyboard?.off("keydown", this.handleTypingKey, this);
+    this.removeMobileInput();
 
     const evaluation = evaluateShot({
       team: this.team.name,
@@ -408,5 +451,51 @@ export class GameScene extends Phaser.Scene {
       this.promptChars.push(text);
       this.typingOverlay?.add(text);
     });
+  }
+
+  private ensureMobileInput() {
+    if (this.mobileInput || typeof document === "undefined") return;
+
+    const input = document.createElement("textarea");
+    input.setAttribute("inputmode", "text");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("autocapitalize", "off");
+    input.setAttribute("spellcheck", "false");
+    input.setAttribute("aria-label", "Typing challenge input");
+    input.style.position = "fixed";
+    input.style.left = "0";
+    input.style.top = "0";
+    input.style.width = "1px";
+    input.style.height = "1px";
+    input.style.opacity = "0.01";
+    input.style.border = "0";
+    input.style.padding = "0";
+    input.style.resize = "none";
+    input.style.zIndex = "1";
+    input.style.caretColor = "transparent";
+    input.addEventListener("input", this.handleMobileInput);
+    document.body.appendChild(input);
+    this.mobileInput = input;
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.removeMobileInput());
+  }
+
+  private focusMobileInput() {
+    if (!this.mobileInput || !this.isTouchDevice()) return;
+
+    this.mobileInput.focus({ preventScroll: true });
+  }
+
+  private removeMobileInput() {
+    if (!this.mobileInput) return;
+
+    this.mobileInput.removeEventListener("input", this.handleMobileInput);
+    this.mobileInput.remove();
+    this.mobileInput = undefined;
+  }
+
+  private isTouchDevice() {
+    return this.sys.game.device.input.touch;
   }
 }
