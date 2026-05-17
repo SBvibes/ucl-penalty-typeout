@@ -4,6 +4,15 @@ export const imageKeys = {
   keeperIdle: "keeper-idle",
   psgIdle: "psg-idle",
   bayernIdle: "bayern-idle",
+  strikerIdleClean: "striker-idle-clean",
+  strikerKickWindupClean: "striker-kick-windup-clean",
+  strikerKickFollowthroughClean: "striker-kick-followthrough-clean",
+  strikerCelebrateClean: "striker-celebrate-clean",
+  strikerDespairClean: "striker-despair-clean",
+  goalkeeperIdleClean: "goalkeeper-idle-clean",
+  goalkeeperDiveLeftClean: "goalkeeper-dive-left-clean",
+  goalkeeperDiveRightClean: "goalkeeper-dive-right-clean",
+  goalkeeperCatchCenterClean: "goalkeeper-catch-center-clean",
 } as const;
 
 export const imagePaths: Record<(typeof imageKeys)[keyof typeof imageKeys], string> = {
@@ -12,6 +21,15 @@ export const imagePaths: Record<(typeof imageKeys)[keyof typeof imageKeys], stri
   [imageKeys.keeperIdle]: "assets/sprites/keeper_idle.png",
   [imageKeys.psgIdle]: "assets/sprites/psg_idle.png",
   [imageKeys.bayernIdle]: "assets/sprites/bayern_idle.png",
+  [imageKeys.strikerIdleClean]: "assets/sprites/generated/striker_idle_clean.png",
+  [imageKeys.strikerKickWindupClean]: "assets/sprites/generated/striker_kick_windup_clean.png",
+  [imageKeys.strikerKickFollowthroughClean]: "assets/sprites/generated/striker_kick_followthrough_clean.png",
+  [imageKeys.strikerCelebrateClean]: "assets/sprites/generated/striker_celebrate_clean.png",
+  [imageKeys.strikerDespairClean]: "assets/sprites/generated/striker_despair_clean.png",
+  [imageKeys.goalkeeperIdleClean]: "assets/sprites/generated/goalkeeper_idle_clean.png",
+  [imageKeys.goalkeeperDiveLeftClean]: "assets/sprites/generated/goalkeeper_dive_left_clean.png",
+  [imageKeys.goalkeeperDiveRightClean]: "assets/sprites/generated/goalkeeper_dive_right_clean.png",
+  [imageKeys.goalkeeperCatchCenterClean]: "assets/sprites/generated/goalkeeper_catch_center_clean.png",
 };
 
 export const soundKeys = {

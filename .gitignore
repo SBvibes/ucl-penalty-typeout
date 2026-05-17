@@ -4,3 +4,4 @@ node_modules/
 tmp/
 vite-phaser.log
 vite-phaser-*.log
+assets/sprites/generated/source_chroma/
