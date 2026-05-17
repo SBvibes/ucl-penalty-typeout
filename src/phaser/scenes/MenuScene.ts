@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { createShootoutSession, playSound, soundKeys, teams } from "../game";
+import { createShootoutSession, playSound, soundKeys, startStadiumAmbience, teams } from "../game";
 import type { TeamOption } from "../game";
 
 export class MenuScene extends Phaser.Scene {
@@ -82,6 +82,7 @@ export class MenuScene extends Phaser.Scene {
     });
     card.on("pointerdown", () => {
       playSound(this, soundKeys.select);
+      startStadiumAmbience(this);
       this.scene.start("GameScene", {
         teamId: team.id,
         session: createShootoutSession(team.id),

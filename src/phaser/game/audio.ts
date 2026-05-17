@@ -18,6 +18,18 @@ export function playSound(scene: Phaser.Scene, key: SoundKey, config: Phaser.Typ
   });
 }
 
+export function startStadiumAmbience(scene: Phaser.Scene) {
+  if (!scene.cache.audio.exists(soundKeys.stadiumAmbience)) return;
+
+  const existing = scene.sound.get(soundKeys.stadiumAmbience);
+  if (existing?.isPlaying) return;
+
+  scene.sound.play(soundKeys.stadiumAmbience, {
+    loop: true,
+    volume: volumeBySound[soundKeys.stadiumAmbience],
+  });
+}
+
 export function playGoalReaction(scene: Phaser.Scene) {
   playSound(scene, soundKeys.net);
   playSound(scene, soundKeys.crowdCheer);
