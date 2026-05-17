@@ -1,4 +1,5 @@
 export * from "./assets";
+export * from "./audioControls";
 export * from "./audio";
 export * from "./shotOutcome";
 export * from "./shotZones";

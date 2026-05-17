@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import {
   clampTypedText,
+  createAudioToggle,
   evaluateShot,
   getTimeLimitSeconds,
   getTeam,
@@ -75,6 +76,7 @@ export class GameScene extends Phaser.Scene {
       fontStyle: "bold",
     }).setOrigin(1, 0.5);
     this.createShotPips(width / 2, 58);
+    createAudioToggle(this, width - 42, 76);
 
     const strikerKey = this.team.id === "bayern" ? imageKeys.bayernStrikerIdleClean : imageKeys.strikerIdleClean;
     this.strikerSprite = this.add.image(width * 0.34, height * 0.74, strikerKey).setScale(0.17).setOrigin(0.5, 1);

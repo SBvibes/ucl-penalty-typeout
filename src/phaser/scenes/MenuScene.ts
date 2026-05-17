@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { createShootoutSession, playSound, soundKeys, startStadiumAmbience, teams } from "../game";
+import { createAudioToggle, createShootoutSession, playSound, soundKeys, startStadiumAmbience, teams } from "../game";
 import type { TeamOption } from "../game";
 
 export class MenuScene extends Phaser.Scene {
@@ -11,6 +11,7 @@ export class MenuScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x061022);
+    createAudioToggle(this, width - 32, 36);
     this.add.text(width / 2, 118, "UCL SEMI FINAL", {
       color: "#55d6ff",
       fontFamily: "monospace",

@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import {
   addShootoutShot,
+  createAudioToggle,
   createShootoutSession,
   getAverageAccuracy,
   getAverageWpm,
@@ -87,6 +88,7 @@ export class ResultScene extends Phaser.Scene {
       fontStyle: "bold",
     }).setOrigin(1, 0.5);
     this.createShotPips(width / 2, 58);
+    createAudioToggle(this, width - 42, 76);
 
     this.add.image(width * 0.39, height * 0.76, strikerKey).setScale(0.17).setOrigin(0.5, 1);
     this.add.image(width * 0.55, height * 0.52, keeperKey).setScale(0.145).setOrigin(0.5, 1);
