@@ -35,9 +35,10 @@ export class GameScene extends Phaser.Scene {
       fontStyle: "bold",
     }).setOrigin(1, 0.5);
 
-    this.add.image(width * 0.34, height * 0.74, imageKeys.strikerIdleClean).setScale(0.17).setOrigin(0.5, 1);
-    this.add.image(width * 0.5, height * 0.72, imageKeys.ball).setScale(0.55);
-    this.add.image(width * 0.5, height * 0.49, imageKeys.goalkeeperIdleClean).setScale(0.18).setOrigin(0.5, 1);
+    const strikerKey = this.team.id === "bayern" ? imageKeys.bayernStrikerIdleClean : imageKeys.strikerIdleClean;
+    this.add.image(width * 0.34, height * 0.74, strikerKey).setScale(0.17).setOrigin(0.5, 1);
+    this.add.image(width * 0.5, height * 0.705, imageKeys.ball).setScale(0.55);
+    this.add.image(width * 0.5, height * 0.515, imageKeys.goalkeeperIdleClean).setScale(0.145).setOrigin(0.5, 1);
 
     this.add.text(width / 2, height - 42, "PHASER AIM SCREEN NEXT", {
       color: "#f8f4d8",
